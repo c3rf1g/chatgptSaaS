@@ -28,10 +28,10 @@ export async function startTgBot(token, responsePairs, botId) {
         console.log(`Received message from ${msg.from.username}: ${msg.text}`);
         getComplition(msg.from.id, msg.text, [{
             "role": "system",
-            content: systemMessage
+            "content": systemMessage
         }, {
             "role": "assistant",
-            content: systemMessage
+            "content": systemMessage
         }]).then((response) => {
             console.log(response)
             bot.sendMessage(msg.chat.id, response);
