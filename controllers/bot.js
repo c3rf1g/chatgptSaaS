@@ -1,5 +1,5 @@
-import {Bot} from "../models/BotModel.js";
-import {ResponsePair} from "../models/ResponsePairModel.js";
+import {Bots} from "../models/BotModel.js";
+import {ResponsePairs} from "../models/ResponsePairModel.js";
 import {startTgBot} from "../Telegram/TelegramBots.js";
 
 
@@ -18,7 +18,7 @@ export const createBot = async (req, res) => {
             error: "No have bot name"
         })
 
-        const createdBot = await Bot.create({
+        const createdBot = await Bots.create({
             data: {
                 name: botName,
                 token: botToken,
@@ -45,7 +45,7 @@ export const startBot = async (req, res) => {
     try {
         const botId = req.body.botId
 
-        const bot = await Bot.findUnique({
+        const bot = await Bots.findUnique({
             where: {
                 id: botId
             },
@@ -72,7 +72,7 @@ export const startBot = async (req, res) => {
 
 export const getBotTemplate = async (req, res) => {
     try {
-        const responseList = await Bot.findUnique({
+        const responseList = await Bots.findUnique({
             where: {
                 id: req.body.botId,
             },
@@ -97,7 +97,7 @@ export const getBotTemplate = async (req, res) => {
 
 export const getStartedBots = async () => {
     try {
-        return await Bot.findMany({
+        return await Bots.findMany({
             where: {
                 started: true
             },
@@ -113,7 +113,7 @@ export const getStartedBots = async () => {
 export const setBotStartedFlag = async (botId, value) => {
     // change started flag to value
     try {
-        await Bot.update({
+        await Bots.update({
             where: {
                 id: botId
             },

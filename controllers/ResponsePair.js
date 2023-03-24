@@ -1,5 +1,5 @@
-import {ResponsePair} from "../models/ResponsePairModel.js";
-import {Bot} from "../models/BotModel.js";
+import {ResponsePairs} from "../models/ResponsePairModel.js";
+import {Bots} from "../models/BotModel.js";
 
 export const updateResponsePair = async (req, res) => {
     try {
@@ -12,7 +12,7 @@ export const updateResponsePair = async (req, res) => {
             error: "No have bot id"
         })
 
-        const botExist = await Bot.findUnique({
+        const botExist = await Bots.findUnique({
             where: {
                 id: botId
             }
@@ -24,7 +24,7 @@ export const updateResponsePair = async (req, res) => {
         })
 
         if (newResponsePairs.length > 0) {
-            const responsePairs = await ResponsePair.createMany({
+            const responsePairs = await ResponsePairs.createMany({
                 data: newResponsePairs.map(pair => ({
                     question: pair.question,
                     answer: pair.answer,
@@ -59,7 +59,7 @@ export const deleteResponsePair = async (req, res) => {
         const botId = req.body.botId
         const pairId = req.body.pairId
 
-        const botExist = await Bot.findUnique({
+        const botExist = await Bots.findUnique({
             where: {
                 id: botId
             }
@@ -71,7 +71,7 @@ export const deleteResponsePair = async (req, res) => {
         })
 
 
-            const deletedPair = await ResponsePair.delete({
+            const deletedPair = await ResponsePairs.delete({
                 where: {
                     id: pairId
                 }
@@ -101,7 +101,7 @@ export const addResponsePair = async (req, res) => {
         const question = req.body.question
         const answer = req.body.answer
 
-        const botExist = await Bot.findUnique({
+        const botExist = await Bots.findUnique({
             where: {
                 id: botId
             }
@@ -113,7 +113,7 @@ export const addResponsePair = async (req, res) => {
         })
 
         if (question && answer) {
-            const responsePair = await ResponsePair.create({
+            const responsePair = await ResponsePairs.create({
                 data: {
                     question: question,
                     answer: answer,

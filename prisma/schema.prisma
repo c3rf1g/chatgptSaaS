@@ -12,10 +12,10 @@ datasource db {
 
 model User {
   id        Int   @id @default(autoincrement())
-  name      String
   email     String  @unique
   pass      String
   bots      Bot[]
+  refresh_token String?
 }
 
 model Bot {

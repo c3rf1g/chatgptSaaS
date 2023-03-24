@@ -1,3 +1,3 @@
 import db from "../config/Database.js";
 
-export const Bots = db.Bot
+export const Users = db.User
