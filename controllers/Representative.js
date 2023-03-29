@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import {validate} from "email-validator";
 import {Users} from "../models/UserModel.js";
 
-export const Register = async(req, res) => {
+export const Register = async(req, res, next) => {
     try {
         if (!validate(req.body.email)) return res.json(
             {
@@ -35,10 +35,7 @@ export const Register = async(req, res) => {
                 pass: hashPassword
             }
         });
-        res.json({
-            "message": true,
-            "data": {}
-        })
+        next()
     } catch (error) {
         console.log(error);
         res.sendStatus(500)

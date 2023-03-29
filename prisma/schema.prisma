@@ -22,7 +22,7 @@ model Bot {
   id           Int    @id @default(autoincrement())
   name         String
   token        String   @unique
-  rep          User @relation(fields: [ownerId], references: [id])
+  rep          User? @relation(fields: [ownerId], references: [id])
   ownerId      Int
   started      Boolean  @default(false)
   createdAt    DateTime  @default(now())

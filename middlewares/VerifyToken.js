@@ -10,6 +10,7 @@ export const verifyToken = (req, res, next) => {
         if(err) return res.sendStatus(403)
         console.log(token)
         req.email = decoded.email;
+        req.ownerId = decoded.userId
         next();
     })
 }

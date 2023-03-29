@@ -5,10 +5,10 @@ import {startTgBot} from "../Telegram/TelegramBots.js";
 
 export const createBot = async (req, res) => {
     try {
-        const botToken = req.body.botToken
-        const botName = req.body.botName
-        const ownerId = req.body.ownerId
-
+        const botToken = req.body.token
+        const botName = req.body.name
+        const ownerId = req.ownerId
+        console.log(req.body)
         if (!botToken) res.json({
             message: false,
             error: "No have bot token"
@@ -28,9 +28,12 @@ export const createBot = async (req, res) => {
         if (createdBot) {
             res.json({
                 message: true,
-                data: {}
+                data: {
+                    ...createdBot
+                }
             })
         }
+        console.log(createdBot)
 
     } catch (e) {
         console.log(e)
@@ -125,5 +128,66 @@ export const setBotStartedFlag = async (botId, value) => {
     } catch (e) {
         console.log(e)
         return 0
+    }
+}
+
+export const getBots = async (req, res) => {
+    try {
+        const bots = await Bots.findMany({
+            where: {
+                ownerId: req.userId
+            },
+            include: {
+                responseList: true
+            }
+        })
+        console.log(bots)
+        res.json({
+            message: true,
+            data: bots
+        })
+    } catch (e) {
+        console.log(e)
+        res.json({
+            message: false,
+            error: "Internal error"
+        })
+    }
+}
+
+export const deleteBot = async (req, res) => {
+    try {
+        const botId = req.body.botId
+        const bot = await Bots.findUnique({
+            where: {
+                id: botId
+            }
+        })
+        if (bot) {
+            await Bots.delete({
+                where: {
+                    id: botId
+                }
+            })
+            await ResponsePairs.deleteMany({
+                where: {
+                    botId: botId
+                }
+            })
+            console.log(bot)
+            res.json({
+                message: true,
+                data: {
+                    ...bot
+                }
+            })
+        }
+
+    } catch (e) {
+        console.log(e)
+        res.json({
+            message: false,
+            error: "Internal error"
+        })
     }
 }

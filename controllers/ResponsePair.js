@@ -1,5 +1,6 @@
 import {ResponsePairs} from "../models/ResponsePairModel.js";
 import {Bots} from "../models/BotModel.js";
+import db from "../config/Database.js";
 
 export const updateResponsePair = async (req, res) => {
     try {
@@ -55,7 +56,6 @@ export const updateResponsePair = async (req, res) => {
 export const deleteResponsePair = async (req, res) => {
     try {
         // [{q: text, a: text}]
-        const responsePairs = req.body.responsePairs
         const botId = req.body.botId
         const pairId = req.body.pairId
 
@@ -65,24 +65,23 @@ export const deleteResponsePair = async (req, res) => {
             }
         })
         console.log(botExist && botExist.ownerId === req.body.ownerId)
-        if (!(botExist && botExist.ownerId === req.body.ownerId)) res.json({
+        console.log(botExist, botExist.ownerId === req.ownerId, req.ownerId)
+        if (!(botExist && botExist.ownerId === req.ownerId)) res.json({
             message: false,
             error: "Bot not exist"
         })
 
-
-            const deletedPair = await ResponsePairs.delete({
-                where: {
-                    id: pairId
-                }
-            });
-            console.log(responsePairs)
-            res.json({
-                message: true,
-                data: {
-                    deletedPair
-                }
-            })
+        const deletedPair = await ResponsePairs.delete({
+            where: {
+                id: pairId
+            }
+        });
+        res.json({
+            message: true,
+            data: {
+                ...deletedPair
+            }
+        })
 
 
     } catch (e) {
@@ -128,6 +127,65 @@ export const addResponsePair = async (req, res) => {
             })
         }
     } catch (e) {
+        res.json({
+            message: false,
+            error: "Internal error"
+        })
+    }
+}
+
+export const updatePairs = async (req, res) => {
+    try {
+        const botId = req.body.botId
+        const pairs = req.body.qaList
+
+        const botExist = await Bots.findUnique({
+            where: {
+                id: botId
+            }
+        })
+        console.log(botExist, req.ownerId, botExist.ownerId === req.ownerId)
+        if (!(botExist && botExist.ownerId === req.ownerId)) res.json({
+            message: false,
+            error: "Bot not exist"
+        })
+
+        if (pairs.length > 0) {
+
+            const trackers = await db.$transaction(
+                pairs.map((pair) => {
+                    if (pair.id) {
+                        return ResponsePairs.update({
+                            where: { id: pair.id },
+                            data: { ...pair }
+                        });
+                    } else {
+                        return ResponsePairs.create({
+                            data: {
+                                ...pair,
+                                botId: botId
+                            }
+
+                        });
+                    }
+                })
+            );
+
+            console.log(trackers)
+            res.json({
+                message: true,
+                data:
+                    trackers
+            })
+
+        } else {
+            res.json({
+                message: false,
+                error: "Fill data for training"
+            })
+        }
+    } catch (e) {
+        console.log(e)
         res.json({
             message: false,
             error: "Internal error"
