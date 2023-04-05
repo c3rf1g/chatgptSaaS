@@ -6,6 +6,7 @@ import {Users} from "../models/UserModel.js";
 
 export const Register = async(req, res, next) => {
     try {
+        console.log("hui")
         if (!validate(req.body.email)) return res.json(
             {
                 "message": false,
@@ -44,13 +45,17 @@ export const Register = async(req, res, next) => {
 
 export const Login = async(req, res) => {
     try {
-        console.log(req.body)
+        console.log(req.body.email)
         const user = await Users.findMany({
             where: {
                 email: req.body.email
             }
         });
         console.log(user)
+        if (!user.length) return res.json({
+            "message": false,
+            "error": "Login or password wrong"
+        })
         const match = await bcrypt.compare(req.body.password, user[0].pass);
 
         if(!match) return res.json({

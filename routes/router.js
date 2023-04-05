@@ -1,5 +1,5 @@
 import express from "express";
-import {createBot, deleteBot, getBots, getBotTemplate, startBot} from "../controllers/bot.js";
+import {createBot, deleteBot, getBots, getBotTemplate, startBot, stopBot} from "../controllers/bot.js";
 import {addResponsePair, deleteResponsePair, updatePairs, updateResponsePair} from "../controllers/ResponsePair.js";
 import {verifyToken} from "../middlewares/VerifyToken.js";
 import {Login, Register} from "../controllers/Representative.js";
@@ -8,7 +8,9 @@ export const router = express.Router();
 router.post('/createBot', verifyToken, createBot)
 router.post('/updateResponsePair', updateResponsePair)
 router.get('/getBotTemplate', getBotTemplate)
-router.post('/startBot', startBot)
+router.post('/startBot', verifyToken, startBot)
+router.post('/stopBot', verifyToken, stopBot)
+
 router.get('/getBots', verifyToken, getBots)
 router.post('/deleteResponsePair', verifyToken, deleteResponsePair)
 router.post('/addResponsePair', addResponsePair)

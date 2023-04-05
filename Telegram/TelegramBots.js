@@ -2,16 +2,23 @@ import TelegramBot from "node-telegram-bot-api";
 import {openai} from "../index.js";
 import {getComplition} from "../OpenAI/OpenAI.js";
 import {getStartedBots, setBotStartedFlag} from "../controllers/bot.js";
+import {checkToken} from "./checkToken.js";
 /* OPEN AI CONFIGURATION */
 
-export const botList = {};
-export const botIdToToken = {}
+export var botList = {};
+export var botIdToToken = {}
 export async function startTgBot(token, responsePairs, botId) {
+
+    if (!(await checkToken(token))) {
+        console.log(botId, "not corrected token")
+        return false
+    }
 
     botIdToToken[botId] = token
     if (botList[token]) {
         console.log(await botList[token].stopPolling())
         // delete bot from
+        console.log("asd")
         delete botList[token]
     }
 
@@ -36,17 +43,22 @@ export async function startTgBot(token, responsePairs, botId) {
             console.log(response)
             bot.sendMessage(msg.chat.id, response);
         })
+        // bot.sendMessage(msg.chat.id, msg.text);
+
     });
-    await setBotStartedFlag(botId, true)
     botList[token] = bot
+    console.log(botList, botIdToToken)
+    return true
 }
 
 export async function stopTgBot(botId) {
-    if (botList[botIdToToken[botId]]){
-        await setBotStartedFlag(botId, false)
-        await botList[botIdToToken[botId]].stopPolling()
-        // delete bot from
-        delete botList[botIdToToken[botId]]
+    console.log('stoptgbot', botList, botIdToToken, botId)
+    if (botList[botId]){
+        await botList[botId].stopPolling()
+        delete botList[botId]
+        return true
+    } else {
+        return false
     }
 }
 
@@ -64,7 +76,7 @@ export async function getTgBotListTokens() {
 
 export async function botsInit() {
     const bots = await getStartedBots()
-    console.log(bots)
+    console.log('init bots', bots)
 
     if (bots)
         for (let bot of bots) {

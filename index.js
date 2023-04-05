@@ -6,12 +6,14 @@ import db from "./config/Database.js";
 import {router} from "./routes/router.js";
 import {Configuration, OpenAIApi} from "openai";
 import {botsInit} from "./Telegram/TelegramBots.js";
+dotenv.config();
 
 const configuration = new Configuration({
-    apiKey: process.env.OPENAI_KEY
+    apiKey: process.env.OPENAI_KEY,
 });
 export const openai = new OpenAIApi(configuration);
-dotenv.config();
+console.log(openai)
+
 const app = express();
 app.use(cors({ credentials:true, origin:'http://localhost:3001' }));
 app.use(cookieParser());

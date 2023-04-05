@@ -1,6 +1,6 @@
 import {Bots} from "../models/BotModel.js";
 import {ResponsePairs} from "../models/ResponsePairModel.js";
-import {startTgBot} from "../Telegram/TelegramBots.js";
+import {startTgBot, stopTgBot} from "../Telegram/TelegramBots.js";
 
 
 export const createBot = async (req, res) => {
@@ -9,11 +9,11 @@ export const createBot = async (req, res) => {
         const botName = req.body.name
         const ownerId = req.ownerId
         console.log(req.body)
-        if (!botToken) res.json({
+        if (!botToken) return res.json({
             message: false,
             error: "No have bot token"
         })
-        if (!botName) res.json({
+        if (!botName) return res.json({
             message: false,
             error: "No have bot name"
         })
@@ -26,7 +26,7 @@ export const createBot = async (req, res) => {
             }
         })
         if (createdBot) {
-            res.json({
+            return res.json({
                 message: true,
                 data: {
                     ...createdBot
@@ -57,13 +57,30 @@ export const startBot = async (req, res) => {
             }
         })
         if (bot) {
-            startTgBot(bot.token, bot.responseList, bot.id)
-            console.log("started")
+            if (await startTgBot(bot.token, bot.responseList, bot.id)) {
+                let botUpdated = setBotStartedFlag(botId, true)
+                console.log("started")
+
+                res.json({
+                    message: true,
+                    data: {
+                        ...botUpdated
+                    }
+                })
+            } else {
+                return res.json({
+                    message: false,
+                    error: "Bot not started"
+                })
+            }
+
+        } else {
+            return res.json({
+                message: false,
+                error: "Bot not found"
+            })
         }
-        res.json({
-            message: true,
-            data: {}
-        })
+
     } catch (e) {
         console.log(e)
         res.json({
@@ -116,7 +133,7 @@ export const getStartedBots = async () => {
 export const setBotStartedFlag = async (botId, value) => {
     // change started flag to value
     try {
-        await Bots.update({
+        return await Bots.update({
             where: {
                 id: botId
             },
@@ -124,7 +141,6 @@ export const setBotStartedFlag = async (botId, value) => {
                 started: value
             }
         })
-        return 1
     } catch (e) {
         console.log(e)
         return 0
@@ -135,7 +151,7 @@ export const getBots = async (req, res) => {
     try {
         const bots = await Bots.findMany({
             where: {
-                ownerId: req.userId
+                ownerId: req.ownerId
             },
             include: {
                 responseList: true
@@ -164,22 +180,65 @@ export const deleteBot = async (req, res) => {
             }
         })
         if (bot) {
-            await Bots.delete({
-                where: {
-                    id: botId
-                }
-            })
             await ResponsePairs.deleteMany({
                 where: {
                     botId: botId
                 }
             })
+            await Bots.delete({
+                where: {
+                    id: botId
+                }
+            })
+
             console.log(bot)
             res.json({
                 message: true,
                 data: {
                     ...bot
                 }
+            })
+        }
+
+    } catch (e) {
+        console.log(e)
+        res.json({
+            message: false,
+            error: "Internal error"
+        })
+    }
+}
+
+export const stopBot = async (req, res) => {
+    try {
+        const botId = req.body.botId
+        const bot = await Bots.findUnique({
+            where: {
+                id: botId
+            }
+        })
+        if (bot) {
+            let result = await stopTgBot(bot.token)
+            console.log(result)
+
+            if (!result) {
+                return res.json({
+                    message: false,
+                    error: "Bot already stopped"
+                })
+            }
+            console.log(bot)
+            result = await setBotStartedFlag(botId, false)
+            res.json({
+                message: true,
+                data: {
+                    ...result
+                }
+            })
+        } else {
+            res.json({
+                message: false,
+                error: "Bot not found"
             })
         }
 
